@@ -18,12 +18,12 @@
     "postcss": "^8",
     "tailwindcss": "^3",
     "vue": "^3.2.13",
-    "vue-cli-plugin-tailwind": "~3.0.0"
-  },
-  "devDependencies": {
+    "vue-cli-plugin-tailwind": "~3.0.0",
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
     "eslint": "^7.32.0"
+  },
+  "devDependencies": {
   },
   "eslintConfig": {
     "root": true,
