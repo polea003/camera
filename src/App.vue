@@ -65,6 +65,7 @@ A Progressive Web App Camera built using Vue, Tailwind, and WebRTC. Try adding t
 </template>
 <script>
 // import not require
+// test
 import loadImage from "blueimp-load-image"
 
 export default {
