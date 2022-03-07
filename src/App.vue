@@ -64,7 +64,7 @@ A Progressive Web App Camera built using Vue, Tailwind, and WebRTC. Try adding t
   </main>
 </template>
 <script>
-const { loadImage } = require('blueimp-load-image')
+import loadImage from "blueimp-load-image"
 
 export default {
   data() {
@@ -103,7 +103,7 @@ export default {
       let videoContext = videoCanvas.getContext('2d')
       
       videoContext.drawImage(video, 0, 0)
-      
+
       this.photo = loadImage.scale(videoCanvas, {
         maxHeight: 1080,
         maxWidth: 1080,
