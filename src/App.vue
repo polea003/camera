@@ -67,8 +67,20 @@ A Progressive Web App Camera built using Vue, Tailwind, and WebRTC. Try adding t
 // import not require
 // test
 import loadImage from "blueimp-load-image"
+import * as faceapi from "face-api.js"
+// const commons = require("./js/commons")
+// import * as faceDetectionControls from "./js/faceDetectionControls"
+
+// const REFERENCE_IMAGE = 'assets/pat.png'
 
 export default {
+  async mounted () {
+    await Promise.all([
+      faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+      faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
+    ]).then(await this.start())
+  },
   data() {
     return {
       stream: null,
@@ -77,6 +89,11 @@ export default {
     }
   },
   methods: {
+    async start () {
+      console.log('start')
+    },
+
+
     async startCamera() {
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
@@ -96,7 +113,7 @@ export default {
         this.stream = null
       }
     },
-    capturePhoto() {
+    async capturePhoto() {
       let video = this.$refs.video
       
       let videoCanvas = document.createElement('canvas')      
@@ -113,11 +130,46 @@ export default {
         crop: true,
         canvas: true
       })
+
+      const LabeledFaceDescriptors = await this.loadLabeledImages()
+      const faceMatcher = new faceapi.FaceMatcher(LabeledFaceDescriptors, 0.6) 
+
+      // const canvas = faceapi.createCanvasFromMedia(this.photo)
+      const displaySize = { width: this.photo.width, height: this.photo.height }
+      
+      // console.log(faceapi)
+      // // console.log(commons)
+      // // console.log(faceDetectionControls)
+      // console.log(this.photo)
+      // var file = new File([this.photo.toDataURL()], "name.jpg", { type: "image/jpeg" } );
+      // console.log(file)
+      // // console.log(this.photo.toDataURL())
+      // const queryImage = await faceapi.bufferToImage(file)
+      // console.log(queryImage)
+      const detections = await faceapi.detectAllFaces(this.photo).withFaceLandmarks().withFaceDescriptors()
+      const resizedDetections = faceapi.resizeResults(detections, displaySize)
+      const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor))
+      console.log(results)
+    },
+    async loadLabeledImages() {
+      const labels = ['patrick']
+      return Promise.all(
+        labels.map(async label => {
+          const descriptions = []
+          const img = await faceapi.fetchImage(`/labeled_images/${label}/1.png`)
+          console.log('huh')
+          console.log(img.src)
+          const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
+          descriptions.push(detections.descriptor)
+          return new faceapi.LabeledFaceDescriptors(label, descriptions)
+        })
+      )
     },
     downloadPhoto() {
       this.photo.toBlob(blob => {
         let data = window.URL.createObjectURL(blob)
         let link = document.createElement('a')
+        console.log(data)
 
         link.href = data
         link.download = "photo.jpg"
